@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['id_compte'])) {
-    header('Location: login.php');
+    header('Location: ../index.php');
     exit();
 }
 
@@ -15,8 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['publication'])) {
     $stmt->execute([$_SESSION['id_compte'], $contenu]);
 }
 
-// Récupérer les publications
-// Récupérer les publications avec le nombre de réactions
+// Récupération des publications avec le nombre de réactions
 $publications = $pdo->query("
     SELECT p.id_publication, p.contenu, p.date_heure, p.id_compte, c.nom, c.prenom,
            COUNT(r.id_reaction) as reactions_count, 
@@ -29,7 +28,7 @@ $publications = $pdo->query("
 ");
 
 
-// Récupérer tous les utilisateurs
+// Récupération de tous les utilisateurs
 $users = $pdo->query("SELECT nom, prenom FROM compte");
 
 ?>
@@ -40,57 +39,59 @@ $users = $pdo->query("SELECT nom, prenom FROM compte");
 
 <head>
     <title>Accueil</title>
-    <!-- <link rel="stylesheet" href="./styles/home.css"> -->
     <link rel="stylesheet" href="../styles/output.css">
 </head>
 
 <body class="text-xl">
     <div id="container">
-        <header class="w-full h-[100px] bg-blue-500 flex items-center justify-between px-12 text-3xl">
+        <header class="w-full h-[100px] bg-blue-500 flex items-center justify-between px-12 text-3xl fixed">
             <div>Bienvenue, <?php echo $_SESSION['prenom'] . ' ' . $_SESSION['nom']; ?></div>
             <a href="./logout.php" class="mt-4 inline-block bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 text-sm rounded transition duration-300 ease-in-out transform hover:-translate-y-0.5">
                 Déconnecter
             </a>
         </header>
 
-        <main class="flex px-12 bg-gray-100">
-            <div class="bg-gray-50 border border-gray-200 shadow-lg rounded-lg px-8 py-6 m-8 ml-0">
-                <h2 class="text-2xl font-extrabold text-gray-800 mb-4">Liste des utilisateurs</h2>
+        <main class="w-full flex px-12 bg-gray-200 pt-8  pt-[120px]">
+            <!-- Partie gauche -->
+            <div class=" w-1/5 min-h-screen bg-gray-50 border border-gray-200 shadow-lg rounded-lg p-4">
+                <h2 class="text-2xl font-extrabold text-gray-800 mb-4">Liste des amis:</h2>
                 <ul class="list-disc list-inside pl-5 space-y-3">
-                    <?php foreach ($users as $user): ?>
-                        <li class="text-lg text-gray-700 font-medium">
-                            <?php echo htmlspecialchars($user['prenom']) . ' ' . htmlspecialchars($user['nom']); ?>
-                        </li>
-                    <?php endforeach; ?>
+                    <?php foreach ($users as $user):
+                        if ($user['nom'] != $_SESSION['nom']): ?>
+                            <li class="text-lg text-gray-700 font-medium">
+                                <?php echo htmlspecialchars($user['prenom']) . ' ' . htmlspecialchars($user['nom']); ?>
+                            </li>
+                    <?php endif;
+                    endforeach; ?>
                 </ul>
             </div>
 
-            <div class="w-full">
-                <div class="items-center bg-gray-100 py-8 w-full">
+            <!-- Partie principale -->
+            <div class="w-3/5 mx-4 bg-gray-300 rounded-lg p-4">
+                <div class="items-center bg-gray-300 w-full">
+                    <div class="bg-gray-300 text-sm mb-4">A quoi pensez-vous ?</div>
+
                     <!-- Formulaire de publication -->
-                    <form method="post" action="" class=" flex w-full mx-auto space-y-4">
+                    <form method="post" action="" class=" flex items-center w-full mx-auto">
                         <textarea
                             name="contenu"
                             placeholder="Quoi de neuf ?"
                             required
-                            class="w-3/4 border rounded-lg  mr-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            class="w-full border rounded-lg  mr-4 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none h-20">
                         </textarea>
                         <button
                             type="submit"
                             name="publication"
-                            class="bg-blue-500 hover:bg-blue-600 text-white font-bold px-8 rounded text-xs">
+                            class="bg-blue-500 hover:bg-blue-600 text-white font-bold px-8 py-2 rounded text-xs ">
                             Publier
                         </button>
                     </form>
-
-
-
                 </div>
 
 
-                <div class="">
+                <div class="w-full">
                     <!-- Liste des publications -->
-                    <div class="">Publications récentes</div>
+                    <div class="bg-gray-300 text-sm mt-12 mb-4">Publications récentes:</div>
                     <?php
                     foreach ($publications as $publication) {
 
@@ -100,7 +101,7 @@ $users = $pdo->query("SELECT nom, prenom FROM compte");
                         $userReaction = $stmt->fetchColumn();
                     ?>
 
-                        <div class=" my-8 p-4 bg-white">
+                        <div class=" mb-8 p-4 bg-white rounded-lg">
                             <!-- Utilisateur qui publie -->
                             <div class="text-3xl flex items-center">
                                 <img src="../img/personeAnonyme2.png" alt="Image de l'Utilisateur" class="h-16 w-16">
@@ -109,10 +110,10 @@ $users = $pdo->query("SELECT nom, prenom FROM compte");
                             <!-- Date de publication -->
                             <div class="text-xs text-gray-500"><?php echo htmlspecialchars($publication['date_heure']); ?></div>
 
-                            <div class="bg-gray-200 w-fit p-4 pb-0 mb-4">
+                            <div class="bg-gray-400 w-full p-4 pb-0 mb-4 rounded-lg">
                                 <div class="flex justify-between">
                                     <!-- Contenu de la publication -->
-                                    <div class="mb-8"><?php echo htmlspecialchars($publication['contenu']); ?></div>
+                                    <div class="mb-6"><?php echo nl2br(htmlspecialchars($publication['contenu'])); ?></div>
 
                                     <!-- Suppression de la publication -->
                                     <!-- Si l'utilisateur est l'auteur de la publication, afficher un lien pour la supprimer -->
@@ -129,8 +130,8 @@ $users = $pdo->query("SELECT nom, prenom FROM compte");
                                 </div>
 
                                 <!-- Bouttons de reactions et affichage des commentaires -->
-                                <div class="flex">
-                                    <div class="bg-gray-400 flex w-fit px-4 rounded-lg">
+                                <div class="flex justify-around border-t border-1 border-solid border-gray-600 py-1">
+                                    <div class="bg-gray-300 flex w-fit px-4 rounded">
                                         <!-- Nombre de reactions -->
                                         <div class="mr-4"><?php echo $publication['reactions_count']; ?></div>
 
@@ -138,135 +139,72 @@ $users = $pdo->query("SELECT nom, prenom FROM compte");
                                         <form method="post" action="../react_pub/react.php" id="reactionForm<?php echo $publication['id_publication']; ?>">
                                             <input type="hidden" name="id_publication" value="<?php echo $publication['id_publication']; ?>">
 
-                                            <label class="inline-flex items-center mr-2.5">
-                                                <input type="radio" name="reaction" value="j'aime"
+                                            <label class="inline-flex items-center ml-2.5">
+                                                <input type="radio" name="reaction" value="j'aime" class="mr-1"
                                                     <?php if ($userReaction == "j'aime") echo 'checked'; ?>
                                                     onchange="submitReaction(<?php echo $publication['id_publication']; ?>)">
-                                                <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
-                                                    width="16.000000pt" height="16.000000pt" viewBox="0 0 1222.000000 1280.000000"
-                                                    preserveAspectRatio="xMidYMid meet">
-                                                    <metadata>
-                                                        Created by potrace 1.15, written by Peter Selinger 2001-2017
-                                                    </metadata>
-                                                    <g transform="translate(0.000000,1280.000000) scale(0.100000,-0.100000)"
-                                                        fill="#03a9f4" stroke="none">
-                                                        <path d="M7258 12774 c-60 -19 -84 -33 -112 -64 -42 -47 -52 -83 -61 -215 -18
-                                                            -291 -98 -951 -150 -1240 -83 -456 -247 -909 -432 -1190 -133 -201 -233 -303
-                                                            -568 -576 -331 -269 -493 -448 -600 -664 -30 -60 -115 -254 -188 -430 -257
-                                                            -610 -395 -906 -578 -1235 -404 -727 -746 -1118 -1086 -1242 -49 -18 -85 -21
-                                                            -227 -24 -93 -2 -173 -7 -177 -11 -12 -12 -12 -5224 -1 -5235 5 -5 27 -13 48
-                                                            -18 45 -10 716 -135 1129 -210 273 -50 946 -176 1312 -246 101 -19 242 -39
-                                                            315 -44 73 -6 207 -17 298 -25 486 -43 917 -65 1910 -96 766 -24 1478 9 1851
-                                                            85 274 57 469 154 729 363 180 145 414 400 478 522 63 119 64 127 66 466 1
-                                                            290 2 313 22 361 39 95 98 168 305 374 271 270 347 373 385 520 35 137 13 235
-                                                            -134 600 -89 221 -112 303 -112 400 0 124 41 189 315 505 188 215 237 315 217
-                                                            433 -14 85 -60 177 -209 425 -192 319 -223 400 -199 517 15 72 49 128 208 343
-                                                            71 95 145 206 165 247 36 71 38 80 38 170 -1 85 -5 108 -42 216 -51 148 -119
-                                                            286 -210 424 -159 239 -329 429 -465 518 -174 113 -368 154 -883 187 -515 33
-                                                            -1594 45 -2222 25 -467 -15 -452 -15 -475 8 -46 46 -62 256 -33 428 51 296
-                                                            167 579 558 1361 209 416 250 524 327 847 60 254 64 294 64 636 1 339 -3 384
-                                                            -56 600 -87 361 -195 573 -396 776 -140 141 -304 254 -468 321 -73 30 -143 49
-                                                            -351 98 -94 23 -214 18 -305 -11z" />
-                                                        <path d="M435 6135 c-94 -18 -145 -37 -210 -81 -94 -62 -179 -178 -200 -271
-                                                            -3 -18 -11 -35 -16 -38 -12 -8 -12 -5078 0 -5090 5 -6 16 -35 25 -66 41 -143
-                                                            202 -284 364 -318 37 -8 310 -11 880 -11 911 0 896 -1 1016 63 139 73 234 211
-                                                            259 377 3 19 7 1146 9 2505 2 2373 2 2473 -16 2540 -51 194 -178 328 -360 379
-                                                            -68 20 -104 20 -876 23 -638 1 -820 -1 -875 -12z" />
+                                                <svg role="img" xmlns="http://www.w3.org/2000/svg" width="22px" height="22px" viewBox="0 0 24 24" aria-labelledby="thumbUpIconTitle thumbUpIconDesc" stroke="#2329D6" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter" fill="none" color="#2329D6">
+                                                    <title id="thumbUpIconTitle">Thumb Up</title>
+                                                    <desc id="thumbUpIconDesc">Icon of a a hand with a thumb pointing up</desc>
+                                                    <path d="M8,8.73984815 C8,8.26242561 8.17078432,7.80075162 8.4814868,7.43826541 L13.2723931,1.84887469 C13.7000127,1.34998522 14.4122932,1.20614658 15,1.5 C15.5737957,1.78689785 15.849314,2.45205792 15.6464466,3.06066017 L14,8 L18.6035746,8 C18.7235578,8 18.8432976,8.01079693 18.9613454,8.03226018 C20.0480981,8.22985158 20.7689058,9.27101818 20.5713144,10.3577709 L19.2985871,17.3577709 C19.1256814,18.3087523 18.2974196,19 17.3308473,19 L10,19 C8.8954305,19 8,18.1045695 8,17 L8,8.73984815 Z" />
+                                                    <path d="M4,18 L4,9" />
+                                                </svg>
+                                            </label>
+
+                                            <label class="inline-flex items-center ml-2.5">
+                                                <input type="radio" name="reaction" value="j'adore" class="mr-1"
+                                                    <?php if ($userReaction == "j'adore") echo 'checked'; ?>
+                                                    onchange="submitReaction(<?php echo $publication['id_publication']; ?>)">
+                                                <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                                                    width="18px" height="18px" viewBox="0 0 128 128" enable-background="new 0 0 128 128" xml:space="preserve">
+                                                    <g id="Heart">
+                                                        <g>
+                                                            <path d="M128,36c0-19.883-16.117-36-36-36C80.621,0,70.598,5.383,64,13.625C57.402,5.383,47.379,0,36,0C16.117,0,0,16.117,0,36
+			                                                    c0,0.398,0.105,0.773,0.117,1.172H0C0,74.078,64,128,64,128s64-53.922,64-90.828h-0.117C127.895,36.773,128,36.398,128,36z
+			                                                     M119.887,36.938l-0.051,3.172c-2.652,24.742-37.203,60.523-55.84,77.273c-18.5-16.617-52.695-52-55.773-76.742l-0.109-3.703
+			                                                    C8.102,36.523,8.063,36.109,8,35.656C8.188,20.375,20.676,8,36,8c8.422,0,16.352,3.875,21.754,10.625L64,26.43l6.246-7.805
+			                                                    C75.648,11.875,83.578,8,92,8c15.324,0,27.813,12.375,27.996,27.656C119.941,36.078,119.898,36.5,119.887,36.938z" />
+                                                        </g>
+                                                    </g>
+                                                </svg>
+
+                                            </label>
+
+                                            <label class="inline-flex items-center ml-2.5">
+                                                <input type="radio" name="reaction" value="haha" class="mr-1"
+                                                    <?php if ($userReaction == "haha") echo 'checked'; ?>
+                                                    onchange="submitReaction(<?php echo $publication['id_publication']; ?>)">
+                                                <svg height="20px" id="svg8" version="1.1" viewBox="0 0 16.110678 16.110678" width="20px" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg">
+                                                    <defs id="defs2" />
+                                                    <g id="layer1" transform="translate(-18.473866,-280.4638)">
+                                                        <circle cx="26.529205" cy="288.51913" id="circle2488" r="8.0553389" style="opacity:1;fill:#ffd42a;fill-opacity:1;stroke:none;stroke-width:0.01055691;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+                                                        <path d="m 21.061395,282.61394 a 8.055339,8.055339 0 0 0 -2.587439,5.90506 8.055339,8.055339 0 0 0 8.055322,8.05533 8.055339,8.055339 0 0 0 7.004741,-4.08761 8.055339,8.055339 0 0 1 -0.460954,0.40463 8.055339,8.055339 0 0 1 -0.654741,0.46819 8.055339,8.055339 0 0 1 -0.698665,0.401 8.055339,8.055339 0 0 1 -0.734839,0.32867 8.055339,8.055339 0 0 1 -0.763777,0.25424 8.055339,8.055339 0 0 1 -0.785999,0.17622 8.055339,8.055339 0 0 1 -0.799435,0.0971 8.055339,8.055339 0 0 1 -0.569474,0.0202 8.055339,8.055339 0 0 1 -0.804085,-0.0403 8.055339,8.055339 0 0 1 -0.796334,-0.12041 8.055339,8.055339 0 0 1 -0.780314,-0.19947 8.055339,8.055339 0 0 1 -0.756543,-0.27595 8.055339,8.055339 0 0 1 -0.72502,-0.35037 8.055339,8.055339 0 0 1 -0.686264,-0.42064 8.055339,8.055339 0 0 1 -0.640787,-0.48731 8.055339,8.055339 0 0 1 -0.589112,-0.5488 8.055339,8.055339 0 0 1 -0.53175,-0.60514 8.055339,8.055339 0 0 1 -0.468189,-0.65474 8.055339,8.055339 0 0 1 -0.400492,-0.69866 8.055339,8.055339 0 0 1 -0.329179,-0.73484 8.055339,8.055339 0 0 1 -0.253731,-0.76429 8.055339,8.055339 0 0 1 -0.176217,-0.78549 8.055339,8.055339 0 0 1 -0.09715,-0.79943 8.055339,8.055339 0 0 1 -0.02015,-0.56948 8.055339,8.055339 0 0 1 0.04031,-0.8046 8.055339,8.055339 0 0 1 0.11989,-0.79581 8.055339,8.055339 0 0 1 0.199471,-0.78032 8.055339,8.055339 0 0 1 0.275952,-0.75654 8.055339,8.055339 0 0 1 0.350366,-0.72502 8.055339,8.055339 0 0 1 0.0646,-0.10542 z" id="path2490" style="opacity:1;fill:#ffbc2a;fill-opacity:1;stroke:none;stroke-width:0.01055691;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+                                                        <path d="m 31.899322,288.72705 a 5.3701167,5.3701167 0 0 1 -2.685058,4.65066 5.3701167,5.3701167 0 0 1 -5.370117,0 5.3701167,5.3701167 0 0 1 -2.685058,-4.65066 l 5.370116,0 z" id="path2504" style="opacity:1;fill:#1a1a1a;fill-opacity:1;stroke:none;stroke-width:0.01502244;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+                                                        <path d="m 87.052734,32.732422 h -7.082031 a 20.296504,20.296504 0 0 0 10.148438,17.576172 20.296504,20.296504 0 0 0 20.296879,0 20.296504,20.296504 0 0 0 10.14843,-17.576172 h -7.08203 v 3.589844 c 0,0.643035 -0.12896,1.254709 -0.36328,1.810546 -0.23432,0.555838 -0.57454,1.055012 -0.99414,1.47461 -0.4196,0.419598 -0.91877,0.757868 -1.47461,0.992187 -0.55584,0.23432 -1.16751,0.365235 -1.81055,0.365235 H 91.697266 c -0.643036,0 -1.25471,-0.130915 -1.810547,-0.365235 C 89.330882,40.36529 88.829754,40.02702 88.410156,39.607422 87.990558,39.187824 87.652288,38.68865 87.417969,38.132812 87.18365,37.576975 87.052734,36.965301 87.052734,36.322266 Z" id="path2511" style="opacity:1;fill:#1a1a1a;fill-opacity:1;stroke:none;stroke-width:0.05677772;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" transform="matrix(0.26458334,0,0,0.26458334,0,280.06665)" />
+                                                        <path d="m 87.052734,32.732422 v 3.589844 c 0,0.643035 0.130916,1.254709 0.365235,1.810546 0.234319,0.555838 0.572589,1.055012 0.992187,1.47461 0.419598,0.419598 0.920726,0.757868 1.476563,0.992187 0.555837,0.23432 1.167511,0.365235 1.810547,0.365235 h 17.142574 c 0.64304,0 1.25471,-0.130915 1.81055,-0.365235 0.55584,-0.234319 1.05501,-0.572589 1.47461,-0.992187 0.4196,-0.419598 0.75982,-0.918772 0.99414,-1.47461 0.23432,-0.555837 0.36328,-1.167511 0.36328,-1.810546 v -3.589844 h -13.21484 z" id="path2506" style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.05677772;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" transform="matrix(0.26458334,0,0,0.26458334,0,280.06665)" />
+                                                        <path d="m 28.218075,293.21433 a 1.7347691,1.4991172 0 0 0 -0.01753,-0.0685 1.7347691,1.4991172 0 0 0 -0.05488,-0.14228 1.7347691,1.4991172 0 0 0 -0.07051,-0.13668 1.7347691,1.4991172 0 0 0 -0.08652,-0.13009 1.7347691,1.4991172 0 0 0 -0.100999,-0.12187 1.7347691,1.4991172 0 0 0 -0.114338,-0.11264 1.7347691,1.4991172 0 0 0 -0.126914,-0.1021 1.7347691,1.4991172 0 0 0 -0.137968,-0.0906 1.7347691,1.4991172 0 0 0 -0.147876,-0.0784 1.7347691,1.4991172 0 0 0 -0.15588,-0.0652 1.7347691,1.4991172 0 0 0 -0.163122,-0.0514 1.7347691,1.4991172 0 0 0 -0.168077,-0.0369 1.7347691,1.4991172 0 0 0 -0.171504,-0.0224 1.7347691,1.4991172 0 0 0 -0.173032,-0.008 1.7347691,1.4991172 0 0 0 -0.122722,0.004 1.7347691,1.4991172 0 0 0 -0.172269,0.0181 1.7347691,1.4991172 0 0 0 -0.169219,0.0329 1.7347691,1.4991172 0 0 0 -0.164266,0.0471 1.7347691,1.4991172 0 0 0 -0.158548,0.0613 1.7347691,1.4991172 0 0 0 -0.150163,0.0744 1.7347691,1.4991172 0 0 0 -0.141016,0.0873 1.7347691,1.4991172 0 0 0 -0.130345,0.0988 1.7347691,1.4991172 0 0 0 -0.118149,0.10968 1.7347691,1.4991172 0 0 0 -0.10519,0.11955 1.7347691,1.4991172 0 0 0 -0.09033,0.12746 1.7347691,1.4991172 0 0 0 -0.07546,0.13503 1.7347691,1.4991172 0 0 0 -0.05946,0.14064 1.7347691,1.4991172 0 0 0 -0.03316,0.11198 3.9605801,3.4225729 0 0 0 3.379438,-10e-4 z" id="path2518" style="opacity:1;fill:#ff5555;fill-opacity:1;stroke:none;stroke-width:0.01029941;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+                                                        <path d="m 22.007835,283.55326 a 0.50005,0.50005 0 0 0 -0.109554,0.98444 c -0.10682,-0.0286 -0.01909,-0.005 0.04289,0.0274 0.06198,0.0323 0.147512,0.0802 0.248047,0.13695 0.201068,0.11344 0.458607,0.26161 0.709001,0.40979 0.13643,0.0807 0.142837,0.086 0.26665,0.1602 -0.123837,0.0742 -0.130188,0.0794 -0.26665,0.16019 -0.250394,0.14818 -0.507933,0.29895 -0.709001,0.41238 -0.100535,0.0567 -0.186069,0.10414 -0.248047,0.13643 -0.06198,0.0323 -0.14971,0.0561 -0.04289,0.0274 a 0.50005,0.50005 0 1 0 0.257865,0.9648 c 0.153855,-0.0412 0.166842,-0.0641 0.24598,-0.10542 0.07914,-0.0412 0.173467,-0.0926 0.27957,-0.15245 0.212207,-0.11972 0.470899,-0.2716 0.724503,-0.42168 0.507211,-0.30016 0.990121,-0.59376 0.990121,-0.59376 a 0.50043518,0.50043518 0 0 0 5.29e-4,-5.3e-4 0.50005,0.50005 0 0 0 0.0031,-0.002 0.50043518,0.50043518 0 0 0 0.0088,-0.006 0.50005,0.50005 0 0 0 -0.0801,-0.88729 c -0.05947,-0.0359 -0.449851,-0.27224 -0.922424,-0.5519 -0.253604,-0.15009 -0.512296,-0.30196 -0.724503,-0.42168 -0.106103,-0.0599 -0.200431,-0.11123 -0.27957,-0.15245 -0.07914,-0.0412 -0.09213,-0.0663 -0.24598,-0.10748 a 0.50005,0.50005 0 0 0 -0.148311,-0.0176 z" id="path2520" style="color:#000000;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:medium;line-height:normal;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:normal;word-spacing:normal;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:start;white-space:normal;shape-padding:0;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#1a1a1a;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate" />
+                                                        <path d="m 31.037258,283.55326 a 0.50005,0.50005 0 0 0 -0.132808,0.0176 c -0.153855,0.0412 -0.167359,0.0663 -0.246496,0.10749 -0.07914,0.0412 -0.17295,0.0926 -0.279053,0.15244 -0.212207,0.11972 -0.470898,0.27159 -0.724504,0.42168 -0.480531,0.28437 -0.891505,0.53289 -0.938445,0.56121 a 0.50005,0.50005 0 0 0 -0.11317,0.84284 0.50005,0.50005 0 0 0 0.03565,0.0269 0.50043518,0.50043518 0 0 0 0.01241,0.008 0.50005,0.50005 0 0 0 0.01291,0.009 c 0,0 0.483428,0.2936 0.990637,0.59376 0.253605,0.15008 0.512296,0.30196 0.724503,0.42168 0.106103,0.0598 0.199914,0.11122 0.279053,0.15245 0.07914,0.0412 0.09264,0.0642 0.246497,0.10542 a 0.50005,0.50005 0 1 0 0.272335,-0.9617 c 0.04379,0.0114 -0.0034,-0.003 -0.05581,-0.0305 -0.06198,-0.0323 -0.149579,-0.0797 -0.250116,-0.13643 -0.201067,-0.11343 -0.456538,-0.26419 -0.706932,-0.41237 -0.136499,-0.0808 -0.143092,-0.0859 -0.267168,-0.1602 0.124052,-0.0742 0.130701,-0.0794 0.267168,-0.1602 0.250394,-0.14818 0.505865,-0.29635 0.706932,-0.40979 0.100537,-0.0567 0.188138,-0.10466 0.250116,-0.13694 0.06198,-0.0323 0.149709,-0.056 0.04289,-0.0274 a 0.50005,0.50005 0 0 0 -0.126609,-0.98444 z" id="path2524" style="color:#000000;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:medium;line-height:normal;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:normal;word-spacing:normal;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:start;white-space:normal;shape-padding:0;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#1a1a1a;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate" />
                                                     </g>
                                                 </svg>
                                             </label>
 
-                                            <label class="inline-flex items-center mr-2.5">
-                                                <input type="radio" name="reaction" value="j'adore"
-                                                    <?php if ($userReaction == "j'adore") echo 'checked'; ?>
-                                                    onchange="submitReaction(<?php echo $publication['id_publication']; ?>)">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" id="love">
-                                                    <path fill="url(#a)" d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0Z"></path>
-                                                    <path fill="#fff" d="M10.473 4C8.275 4 8 5.824 8 5.824S7.726 4 5.528 4c-2.114 0-2.73 2.222-2.472 3.41C3.736 10.55 8 12.75 8 12.75s4.265-2.2 4.945-5.34c.257-1.188-.36-3.41-2.472-3.41Z"></path>
-                                                    <defs>
-                                                        <linearGradient id="a" x1="8" x2="8" y2="16" gradientUnits="userSpaceOnUse">
-                                                            <stop stop-color="#FF6680"></stop>
-                                                            <stop offset="1" stop-color="#E61739"></stop>
-                                                        </linearGradient>
-                                                    </defs>
-                                                </svg>
-                                            </label>
-
-                                            <label class="inline-flex items-center mr-2.5">
-                                                <input type="radio" name="reaction" value="haha"
-                                                    <?php if ($userReaction == "haha") echo 'checked'; ?>
-                                                    onchange="submitReaction(<?php echo $publication['id_publication']; ?>)">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" id="haha">
-                                                    <path fill="url(#a)" d="M16 8A8 8 0 1 1-.001 8 8 8 0 0 1 16 8"></path>
-                                                    <path fill="url(#b)" d="M3 8.008C3 10.023 4.006 14 8 14c3.993 0 5-3.977 5-5.992C13 7.849 11.39 7 8 7c-3.39 0-5 .849-5 1.008Z"></path>
-                                                    <path fill="url(#c)" d="M4.541 12.5c.804.995 1.907 1.5 3.469 1.5 1.563 0 2.655-.505 3.459-1.5-.551-.588-1.599-1.5-3.459-1.5s-2.917.912-3.469 1.5Z"></path>
-                                                    <path fill="#2A3755" d="M6.213 4.144c.263.188.502.455.41.788-.071.254-.194.369-.422.37-.78.012-1.708.256-2.506.613-.065.029-.197.088-.332.085-.124-.003-.251-.058-.327-.237-.067-.157-.073-.388.276-.598.545-.33 1.257-.48 1.909-.604-.41-.303-.85-.56-1.315-.768-.427-.194-.38-.457-.323-.6.127-.317.609-.196 1.078.026a9 9 0 0 1 1.552.925Zm3.577 0a8.955 8.955 0 0 1 1.55-.925c.47-.222.95-.343 1.078-.026.057.143.104.406-.323.6a7.028 7.028 0 0 0-1.313.768c.65.123 1.363.274 1.907.604.349.21.342.44.276.598-.077.18-.203.234-.327.237-.135.003-.267-.056-.332-.085-.797-.357-1.725-.6-2.504-.612-.228-.002-.351-.117-.422-.37-.091-.333.147-.6.41-.788v-.001Z"></path>
-                                                    <defs>
-                                                        <linearGradient id="a" x1="8" x2="8" y1="1.64" y2="16" gradientUnits="userSpaceOnUse">
-                                                            <stop stop-color="#FEEA70"></stop>
-                                                            <stop offset="1" stop-color="#F69B30"></stop>
-                                                        </linearGradient>
-                                                        <linearGradient id="b" x1="8" x2="8" y1="7" y2="14" gradientUnits="userSpaceOnUse">
-                                                            <stop stop-color="#472315"></stop>
-                                                            <stop offset="1" stop-color="#8B3A0E"></stop>
-                                                        </linearGradient>
-                                                        <linearGradient id="c" x1="8.005" x2="8.005" y1="11" y2="13.457" gradientUnits="userSpaceOnUse">
-                                                            <stop stop-color="#FC607C"></stop>
-                                                            <stop offset="1" stop-color="#D91F3A"></stop>
-                                                        </linearGradient>
-                                                    </defs>
-                                                </svg>
-                                            </label>
-
-                                            <label class="inline-flex items-center mr-2.5">
-                                                <input type="radio" name="reaction" value="triste"
+                                            <label class="inline-flex items-center ml-2.5">
+                                                <input type="radio" name="reaction" value="triste" class="mr-1"
                                                     <?php if ($userReaction == "triste") echo 'checked'; ?>
                                                     onchange="submitReaction(<?php echo $publication['id_publication']; ?>)">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" id="sad">
-                                                    <path fill="url(#a)" d="M16 8A8 8 0 1 1-.001 8 8 8 0 0 1 16 8"></path>
-                                                    <path fill="url(#b)" d="M5.333 12.765c0 .137.094.235.25.235.351 0 .836-.625 2.417-.625s2.067.625 2.417.625c.156 0 .25-.098.25-.235C10.667 12.368 9.828 11 8 11c-1.828 0-2.667 1.368-2.667 1.765Z"></path>
-                                                    <path fill="url(#c)" d="M3.599 8.8c0-.81.509-1.466 1.134-1.466.627 0 1.134.656 1.134 1.466 0 .338-.09.65-.238.898a.492.492 0 0 1-.301.225c-.14.037-.353.077-.595.077-.243 0-.453-.04-.595-.077a.49.49 0 0 1-.3-.225 1.741 1.741 0 0 1-.24-.898Zm6.534 0c0-.81.508-1.466 1.133-1.466.627 0 1.134.656 1.134 1.466 0 .338-.09.65-.238.898a.49.49 0 0 1-.301.225c-.39.101-.8.101-1.19 0a.49.49 0 0 1-.3-.225 1.74 1.74 0 0 1-.238-.898Z"></path>
-                                                    <path fill="#000" d="M3.599 8.8c0-.81.509-1.466 1.134-1.466.627 0 1.134.656 1.134 1.466 0 .338-.09.65-.238.898a.492.492 0 0 1-.301.225c-.14.037-.353.077-.595.077-.243 0-.453-.04-.595-.077a.49.49 0 0 1-.3-.225 1.741 1.741 0 0 1-.24-.898Zm6.534 0c0-.81.508-1.466 1.133-1.466.627 0 1.134.656 1.134 1.466 0 .338-.09.65-.238.898a.49.49 0 0 1-.301.225c-.39.101-.8.101-1.19 0a.49.49 0 0 1-.3-.225 1.74 1.74 0 0 1-.238-.898Z" filter="url(#d)"></path>
-                                                    <path fill="#4E506A" d="M4.616 7.986c.128.125.136.372.017.55-.12.179-.32.223-.448.097-.128-.125-.135-.372-.017-.55.12-.18.32-.222.448-.097Zm6.489 0c.128.125.136.372.018.55-.12.179-.32.223-.45.097-.127-.125-.134-.372-.015-.55.119-.18.319-.222.447-.097Z"></path>
-                                                    <path fill="url(#e)" d="M4.157 5.153c.332-.153.596-.22.801-.22.277 0 .451.12.55.307.175.329.096.4-.198.459-1.106.224-2.217.942-2.699 1.39-.3.28-.589-.03-.436-.274.154-.244.774-1.105 1.982-1.662Zm6.335.087c.1-.187.273-.306.55-.306.206 0 .47.066.801.219 1.208.557 1.828 1.418 1.981 1.662.153.244-.134.554-.435.274-.483-.448-1.593-1.166-2.7-1.39-.294-.058-.37-.13-.197-.46Z"></path>
-                                                    <path fill="url(#f)" d="M13.5 16c-.828 0-1.5-.748-1.5-1.671 0-.922.356-1.545.643-2.147.598-1.258.716-1.432.857-1.432.141 0 .259.174.857 1.432.287.602.643 1.225.643 2.147 0 .923-.672 1.671-1.5 1.671Z"></path>
-                                                    <path fill="url(#g)" d="M13.5 13.606c-.328 0-.594-.296-.594-.66 0-.366.141-.613.255-.852.236-.498.283-.566.34-.566.055 0 .102.068.338.566.114.24.255.486.255.851s-.266.661-.594.661"></path>
-                                                    <defs>
-                                                        <linearGradient id="a" x1="8" x2="8" y1="1.64" y2="16" gradientUnits="userSpaceOnUse">
-                                                            <stop stop-color="#FEEA70"></stop>
-                                                            <stop offset="1" stop-color="#F69B30"></stop>
-                                                        </linearGradient>
-                                                        <linearGradient id="b" x1="8" x2="8" y1="11" y2="13" gradientUnits="userSpaceOnUse">
-                                                            <stop stop-color="#472315"></stop>
-                                                            <stop offset="1" stop-color="#8B3A0E"></stop>
-                                                        </linearGradient>
-                                                        <linearGradient id="c" x1="7.999" x2="7.999" y1="7.334" y2="10" gradientUnits="userSpaceOnUse">
-                                                            <stop stop-color="#191A33"></stop>
-                                                            <stop offset=".872" stop-color="#3B426A"></stop>
-                                                        </linearGradient>
-                                                        <linearGradient id="e" x1="8" x2="8" y1="4.934" y2="7.199" gradientUnits="userSpaceOnUse">
-                                                            <stop stop-color="#E78E0D"></stop>
-                                                            <stop offset="1" stop-color="#CB6000"></stop>
-                                                        </linearGradient>
-                                                        <linearGradient id="f" x1="13.5" x2="13.5" y1="15.05" y2="11.692" gradientUnits="userSpaceOnUse">
-                                                            <stop stop-color="#35CAFC"></stop>
-                                                            <stop offset="1" stop-color="#007EDB"></stop>
-                                                        </linearGradient>
-                                                        <linearGradient id="g" x1="13.5" x2="13.5" y1="11.528" y2="13.606" gradientUnits="userSpaceOnUse">
-                                                            <stop stop-color="#6AE1FF" stop-opacity=".287"></stop>
-                                                            <stop offset="1" stop-color="#A8E3FF" stop-opacity=".799"></stop>
-                                                        </linearGradient>
-                                                        <filter id="d" width="8.801" height="2.666" x="3.599" y="7.334" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
-                                                            <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
-                                                            <feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend>
-                                                            <feColorMatrix in="SourceAlpha" result="hardAlpha" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"></feColorMatrix>
-                                                            <feOffset></feOffset>
-                                                            <feGaussianBlur stdDeviation=".5"></feGaussianBlur>
-                                                            <feComposite in2="hardAlpha" k2="-1" k3="1" operator="arithmetic"></feComposite>
-                                                            <feColorMatrix values="0 0 0 0 0.0411227 0 0 0 0 0.0430885 0 0 0 0 0.0922353 0 0 0 0.819684 0"></feColorMatrix>
-                                                            <feBlend in2="shape" result="effect1_innerShadow"></feBlend>
-                                                        </filter>
-                                                    </defs>
+                                                <svg height="22px" id="Sad" style="enable-background:new 0 0 32 32;" version="1.1" viewBox="0 0 32 32" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                                    <linearGradient gradientUnits="userSpaceOnUse" id="SVGID_1_" x1="24.001" x2="7.9984" y1="2.1416" y2="29.8589">
+                                                        <stop offset="0" style="stop-color:#FFE254" />
+                                                        <stop offset="1" style="stop-color:#FFB255" />
+                                                    </linearGradient>
+                                                    <circle cx="16" cy="16" r="16" style="fill:url(#SVGID_1_);" />
+                                                    <circle cx="9" cy="16" r="2" style="fill:#212731;" />
+                                                    <circle cx="23" cy="16" r="2" style="fill:#212731;" />
+                                                    <path d="M21,24c-2.211-2.212-7.789-2.212-10,0" style="fill:none;stroke:#212731;stroke-width:1.2804;stroke-miterlimit:10;" />
+                                                    <path d="M25,27c0,1.104-0.896,2-2,2s-2-0.896-2-2s2-4,2-4S25,25.896,25,27z" style="fill:#2667C6;" />
+                                                    <path d="M27,14c-1-2-3-3-5-3" style="fill:none;stroke:#212731;stroke-miterlimit:10;" />
+                                                    <path d="M5,14c1-2,3-3,5-3" style="fill:none;stroke:#212731;stroke-miterlimit:10;" />
                                                 </svg>
 
                                             </label>
@@ -274,20 +212,13 @@ $users = $pdo->query("SELECT nom, prenom FROM compte");
                                     </div>
 
                                     <!-- Liste des commentaires -->
-                                    <div class="bg-gray-400 flex ml-8 px-4 rounded-lg">
+                                    <div class="bg-gray-300 flex ml-8 px-4 rounded">
                                         <!-- Nombre de commentaires -->
                                         <div class="mr-4"><?php echo $publication['comments_count']; ?></div>
                                         <!-- Lien vers toutes les commentaires -->
                                         <a href="../comment/show_comments.php?id_publication=<?php echo $publication['id_publication']; ?>" class="">
-                                            <svg width="25px" height="25px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
-                                                <title>comment-2</title>
-                                                <desc>Created with Sketch Beta.</desc>
-                                                <defs></defs>
-                                                <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
-                                                    <g id="Icon-Set" sketch:type="MSLayerGroup" transform="translate(-152.000000, -255.000000)" fill="#000000">
-                                                        <path d="M168,281 C166.832,281 165.704,280.864 164.62,280.633 L159.912,283.463 L159.975,278.824 C156.366,276.654 154,273.066 154,269 C154,262.373 160.268,257 168,257 C175.732,257 182,262.373 182,269 C182,275.628 175.732,281 168,281 L168,281 Z M168,255 C159.164,255 152,261.269 152,269 C152,273.419 154.345,277.354 158,279.919 L158,287 L165.009,282.747 C165.979,282.907 166.977,283 168,283 C176.836,283 184,276.732 184,269 C184,261.269 176.836,255 168,255 L168,255 Z M175,266 L161,266 C160.448,266 160,266.448 160,267 C160,267.553 160.448,268 161,268 L175,268 C175.552,268 176,267.553 176,267 C176,266.448 175.552,266 175,266 L175,266 Z M173,272 L163,272 C162.448,272 162,272.447 162,273 C162,273.553 162.448,274 163,274 L173,274 C173.552,274 174,273.553 174,273 C174,272.447 173.552,272 173,272 L173,272 Z" id="comment-2" sketch:type="MSShapeGroup"></path>
-                                                    </g>
-                                                </g>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24">
+                                                <path d="M8.2881437,19.1950792 C8.38869181,19.1783212 8.49195996,19.1926955 8.58410926,19.2362761 C9.64260561,19.7368747 10.8021412,20 12,20 C16.418278,20 20,16.418278 20,12 C20,7.581722 16.418278,4 12,4 C7.581722,4 4,7.581722 4,12 C4,13.7069096 4.53528582,15.3318588 5.51454846,16.6849571 C5.62010923,16.830816 5.63909672,17.022166 5.5642591,17.1859256 L4.34581002,19.8521348 L8.2881437,19.1950792 Z M3.58219949,20.993197 C3.18698783,21.0590656 2.87870208,20.6565881 3.04523765,20.2921751 L4.53592782,17.0302482 C3.54143337,15.5576047 3,13.818993 3,12 C3,7.02943725 7.02943725,3 12,3 C16.9705627,3 21,7.02943725 21,12 C21,16.9705627 16.9705627,21 12,21 C10.707529,21 9.4528641,20.727055 8.30053434,20.2068078 L3.58219949,20.993197 Z" />
                                             </svg>
                                         </a>
                                     </div>
@@ -295,15 +226,20 @@ $users = $pdo->query("SELECT nom, prenom FROM compte");
                             </div>
 
                             <!-- Champ pour commenter -->
-                            <form method="post" action="../comment/comment.php">
-                                <input name="commentaire" placeholder="Ajouter un commentaire" class="text-base border border-1 border-solid border-gray-600 p-4 rounded-sm"></input>
+                            <form method="post" action="../comment/comment.php" class="w-full">
+                                <input name="commentaire" placeholder="Ajouter un commentaire" class="text-base border border-1 border-solid border-gray-600 p-2 rounded-md w-4/5"></input>
                                 <input type="hidden" name="id_publication" value="<?php echo $publication['id_publication']; ?>">
-                                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold  p-4 rounded text-xs">Commenter</button>
+                                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold  px-4 py-2 rounded text-sm ml-2">Commenter</button>
                             </form>
 
                         </div>
                     <?php } ?>
                 </div>
+            </div>
+
+            <!-- Partie droite -->
+            <div class="w-1/5 min-h-screen bg-white rounded-lg p-4">
+                Menu
             </div>
         </main>
     </div>

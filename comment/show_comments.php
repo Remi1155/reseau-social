@@ -8,16 +8,15 @@ if (!isset($_SESSION['id_compte'])) {
 // Connexion à la base de données
 require_once '../config/config.php';
 
-// Vérifier si l'ID de la publication est passé en paramètre
+// Vérification si l'ID de la publication est passé en paramètre
 if (!isset($_GET['id_publication'])) {
     echo "Aucune publication sélectionnée.";
     exit();
 }
 
-// Récupérer l'ID de la publication
 $id_publication = $_GET['id_publication'];
 
-// Récupérer les détails de la publication
+// Récupération des détails de la publication
 $stmt = $pdo->prepare("
     SELECT p.id_publication, p.contenu, p.date_heure, p.id_compte, c.nom, c.prenom
     FROM publication p
@@ -27,7 +26,7 @@ $stmt = $pdo->prepare("
 $stmt->execute([$id_publication]);
 $publication = $stmt->fetch();
 
-// Récupérer les commentaires de la publication
+// Récupération des commentaires de la publication
 $comments_stmt = $pdo->prepare("
     SELECT c.contenu, c.date_heure, c.id_compte, c.id_comment, a.nom, a.prenom,
            (SELECT COUNT(*) FROM reaction_comment r WHERE r.id_comment = c.id_comment AND r.type = 'j\'aime') AS jaime,
@@ -72,7 +71,7 @@ $commentaires = $comments_stmt->fetchAll();
             </a>
         </div>
 
-        <!-- Afficher la publication -->
+        <!-- Affichage de la publication -->
         <div class="bg-white p-6 rounded-lg shadow-md mb-8">
             <h2 class="text-2xl font-semibold mb-2"><?php echo htmlspecialchars($publication['prenom'] . ' ' . $publication['nom']); ?></h2>
             <p class="text-gray-700 mb-4"><?php echo nl2br(htmlspecialchars($publication['contenu'])); ?></p>
@@ -82,14 +81,14 @@ $commentaires = $comments_stmt->fetchAll();
         <!-- Section des commentaires -->
         <h2 class="text-xl font-semibold mb-4">Commentaires</h2>
 
-        <!-- Afficher les commentaires -->
+        <!-- Affichage des commentaires -->
         <?php foreach ($commentaires as $commentaire) { ?>
             <div class="bg-white p-4 rounded-lg shadow-md mb-4">
                 <p class="text-lg font-semibold"><?php echo htmlspecialchars($commentaire['prenom'] . ' ' . $commentaire['nom']); ?></p>
                 <p class="text-gray-700"><?php echo nl2br(htmlspecialchars($commentaire['contenu'])); ?></p>
                 <p class="text-sm text-gray-500">Publié le : <?php echo htmlspecialchars($commentaire['date_heure']); ?></p>
 
-                <!-- Afficher les réactions -->
+                <!-- Affichage des réactions -->
                 <div class="mt-2 text-sm">
                     <span class="mr-2">J'aime: <?php echo $commentaire['jaime']; ?></span> |
                     <span class="mx-2">J'adore: <?php echo $commentaire['jadore']; ?></span> |

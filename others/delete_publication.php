@@ -1,18 +1,19 @@
 <?php
 session_start();
 
-// Vérifier si l'utilisateur est connecté
+// Vérification si l'utilisateur est connecté
 if (!isset($_SESSION['id_compte'])) {
     header('Location: ../index.php');
     exit();
 }
 
-// Vérifier si l'ID de la publication est envoyé
+// Vérification si l'ID de la publication est envoyé
 if (isset($_POST['id_publication'])) {
+    
     // Connexion à la base de données
     require_once "../config/config.php";
 
-    // Vérifier si la publication appartient à l'utilisateur connecté
+    // Vérification si la publication appartient à l'utilisateur connecté
     $stmt = $pdo->prepare("SELECT id_compte FROM publication WHERE id_publication = ?");
     $stmt->execute([$_POST['id_publication']]);
     $publication = $stmt->fetch();
@@ -22,7 +23,7 @@ if (isset($_POST['id_publication'])) {
         $stmt = $pdo->prepare("DELETE FROM publication WHERE id_publication = ?");
         $stmt->execute([$_POST['id_publication']]);
 
-        // Rediriger vers la page d'accueil après suppression
+        // Redirection vers la page d'accueil après suppression
         header('Location: ./home.php');
         exit();
     } else {
