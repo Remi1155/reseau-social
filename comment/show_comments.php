@@ -29,17 +29,13 @@ $publication = $stmt->fetch();
 // Récupération des commentaires de la publication
 $comments_stmt = $pdo->prepare("
     SELECT c.contenu, c.date_heure, c.id_compte, c.id_comment, a.nom, a.prenom,
-           (SELECT COUNT(*) FROM reaction_comment r WHERE r.id_comment = c.id_comment AND r.type = 'j\'aime') AS jaime,
-           (SELECT COUNT(*) FROM reaction_comment r WHERE r.id_comment = c.id_comment AND r.type = 'j\'adore') AS jadore,
-           (SELECT COUNT(*) FROM reaction_comment r WHERE r.id_comment = c.id_comment AND r.type = 'haha') AS haha,
-           (SELECT COUNT(*) FROM reaction_comment r WHERE r.id_comment = c.id_comment AND r.type = 'triste') AS triste,
-           (SELECT r.type FROM reaction_comment r WHERE r.id_comment = c.id_comment AND r.id_compte = ?) AS user_reaction
+           (SELECT COUNT(*) FROM reaction_comment r WHERE r.id_comment = c.id_comment) AS reactions_count
     FROM comments c
     JOIN compte a ON c.id_compte = a.id
     WHERE c.id_publication = ?
     ORDER BY c.date_heure DESC
 ");
-$comments_stmt->execute([$_SESSION['id_compte'], $id_publication]);
+$comments_stmt->execute([$id_publication]);
 $commentaires = $comments_stmt->fetchAll();
 ?>
 
@@ -59,9 +55,6 @@ $commentaires = $comments_stmt->fetchAll();
     <!-- Conteneur principal -->
     <div class="max-w-4xl mx-auto p-6">
 
-        <!-- Titre de la page -->
-        <h1 class="text-3xl font-bold mb-6 text-center">Publication</h1>
-
         <!-- Bouton de retour -->
         <div class="mb-6">
             <a href="../others/home.php">
@@ -73,80 +66,89 @@ $commentaires = $comments_stmt->fetchAll();
 
         <!-- Affichage de la publication -->
         <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-            <h2 class="text-2xl font-semibold mb-2"><?php echo htmlspecialchars($publication['prenom'] . ' ' . $publication['nom']); ?></h2>
-            <p class="text-gray-700 mb-4"><?php echo nl2br(htmlspecialchars($publication['contenu'])); ?></p>
-            <p class="text-sm text-gray-500">Publié le : <?php echo htmlspecialchars($publication['date_heure']); ?></p>
+            <div class="text-3xl flex items-center">
+                <img src="../img/personeAnonyme2.png" alt="Image de l'Utilisateur" class="h-16 w-16">
+                <?php echo htmlspecialchars($publication['prenom'] . ' ' . $publication['nom']); ?>
+            </div>
+            <p class="text-black mb-4 text-2xl"><?php echo nl2br(htmlspecialchars($publication['contenu'])); ?></p>
+            <p class="text-xs text-gray-500">Publié le : <?php echo htmlspecialchars($publication['date_heure']); ?></p>
         </div>
 
         <!-- Section des commentaires -->
         <h2 class="text-xl font-semibold mb-4">Commentaires</h2>
 
         <!-- Affichage des commentaires -->
-        <?php foreach ($commentaires as $commentaire) { ?>
+        <?php foreach ($commentaires as $commentaire) {
+
+            // Vérifier si l'utilisateur a déjà réagi à cette publication
+            $stmt = $pdo->prepare("SELECT type FROM reaction_comment WHERE id_comment = ? AND id_compte = ?");
+            $stmt->execute([$commentaire['id_comment'], $_SESSION['id_compte']]);
+            $userReaction = $stmt->fetchColumn();
+
+        ?>
             <div class="bg-white p-4 rounded-lg shadow-md mb-4">
                 <p class="text-lg font-semibold"><?php echo htmlspecialchars($commentaire['prenom'] . ' ' . $commentaire['nom']); ?></p>
-                <p class="text-gray-700"><?php echo nl2br(htmlspecialchars($commentaire['contenu'])); ?></p>
-                <p class="text-sm text-gray-500">Publié le : <?php echo htmlspecialchars($commentaire['date_heure']); ?></p>
+                <p class="text-gray-700 text-xl"><?php echo nl2br(htmlspecialchars($commentaire['contenu'])); ?></p>
+                <p class="text-xs text-gray-500 mt-4">Publié le : <?php echo htmlspecialchars($commentaire['date_heure']); ?></p>
 
-                <!-- Affichage des réactions -->
-                <div class="mt-2 text-sm">
-                    <span class="mr-2">J'aime: <?php echo $commentaire['jaime']; ?></span> |
-                    <span class="mx-2">J'adore: <?php echo $commentaire['jadore']; ?></span> |
-                    <span class="mx-2">Haha: <?php echo $commentaire['haha']; ?></span> |
-                    <span class="mx-2">Triste: <?php echo $commentaire['triste']; ?></span>
+
+                <div class="flex">
+                    <!-- Nombre de reactions -->
+                    <div id="reaction-count-<?php echo $commentaire['id_comment']; ?>">
+                        <?php echo $commentaire['reactions_count']; ?>
+                    </div>
+
+                    <!-- Boutons de réactions -->
+
+                    <button
+                        id="jaime-<?php echo $commentaire['id_comment']; ?>"
+                        <?php if ($userReaction === 'jaime') echo 'class="bg-blue-500"'; ?>
+                        style="margin-left:10px; font-size:13px"
+                        onclick="envoyerReaction('jaime', <?php echo $commentaire['id_comment']; ?>, <?php echo $_SESSION['id_compte']; ?>)">
+                        J'aime
+                    </button>
+
+                    <button
+                        id="jadore-<?php echo $commentaire['id_comment']; ?>"
+                        <?php if ($userReaction === 'jadore') echo 'class="bg-blue-500"'; ?>
+                        style="margin-left:10px; font-size:13px"
+                        onclick="envoyerReaction('jadore', <?php echo $commentaire['id_comment']; ?>, <?php echo $_SESSION['id_compte']; ?>)">
+                        J'adore
+                    </button>
+
+                    <button
+                        id="haha-<?php echo $commentaire['id_comment']; ?>"
+                        <?php if ($userReaction === 'haha') echo 'class="bg-blue-500"'; ?>
+                        style="margin-left:10px; font-size:13px"
+                        onclick="envoyerReaction('haha', <?php echo $commentaire['id_comment']; ?>, <?php echo $_SESSION['id_compte']; ?>)">
+                        Haha
+                    </button>
+
+                    <button
+                        id="triste-<?php echo $commentaire['id_comment']; ?>"
+                        <?php if ($userReaction === 'triste') echo 'class="bg-blue-500"'; ?>
+                        style="margin-left:10px; font-size:13px"
+                        onclick="envoyerReaction('triste', <?php echo $commentaire['id_comment']; ?>, <?php echo $_SESSION['id_compte']; ?>)">
+                        Triste
+                    </button>
                 </div>
 
-                <!-- Formulaire de réaction avec boutons radio -->
-                <form method="post" action="../react_comment/reaction_comment.php" id="reactionForm-<?php echo $commentaire['id_comment']; ?>" class="mt-4">
-                    <input type="hidden" name="id_comment" value="<?php echo $commentaire['id_comment']; ?>">
-                    <input type="hidden" name="id_publication" value="<?php echo $id_publication; ?>">
 
-                    <label for="reaction" class="block mb-1 text-gray-600">Réagir :</label>
-
-                    <!-- Boutons radio avec sélection automatique -->
-                    <div class="flex items-center space-x-4">
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="type" value="j'aime" <?php if ($commentaire['user_reaction'] == "j'aime") echo 'checked'; ?>
-                            onchange="submitForm(<?php echo $commentaire['id_comment']; ?>)">
-                            <span class="ml-2">J'aime</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="type" value="j'adore" <?php if ($commentaire['user_reaction'] == "j'adore") echo 'checked'; ?>
-                            onchange="submitForm(<?php echo $commentaire['id_comment']; ?>)">
-                            <span class="ml-2">J'adore</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="type" value="haha" <?php if ($commentaire['user_reaction'] == "haha") echo 'checked'; ?>
-                            onchange="submitForm(<?php echo $commentaire['id_comment']; ?>)">
-                            <span class="ml-2">Haha</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="type" value="triste" <?php if ($commentaire['user_reaction'] == "triste") echo 'checked'; ?>
-                            onchange="submitForm(<?php echo $commentaire['id_comment']; ?>)">
-                            <span class="ml-2">Triste</span>
-                        </label>
-                    </div>
-                </form>
             </div>
         <?php } ?>
 
-        <!-- Formulaire pour ajouter un commentaire -->
-        <form method="post" action="../comment/comment.php" class="bg-white p-6 rounded-lg shadow-md mt-8">
+
+        <!-- Champ pour commenter -->
+        <form method="post" action="../comment/comment.php" class="w-full">
+            <input name="commentaire" placeholder="Ajouter un commentaire" class="text-base border border-1 border-solid border-gray-600 p-2 rounded-md w-4/5"></input>
             <input type="hidden" name="id_publication" value="<?php echo $publication['id_publication']; ?>">
-            <textarea name="commentaire" placeholder="Ajouter un commentaire" class="w-full p-2 border border-gray-300 rounded mb-4"></textarea>
-            <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition duration-300">
-                Commenter
-            </button>
+            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold  px-4 py-2 rounded text-sm ml-2">Commenter</button>
         </form>
+
 
     </div>
 
-    <script>
-        // Fonction pour soumettre automatiquement le formulaire lorsqu'une réaction est choisie
-        function submitForm(commentId) {
-            document.getElementById('reactionForm-' + commentId).submit();
-        }
-    </script>
+    <script src="../scripts/reaction_comment.js"></script>
 
 </body>
 

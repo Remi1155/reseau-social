@@ -23,11 +23,11 @@ if (isset($_GET['type'], $_GET['id_publication'], $_GET['id_compte'])) {
     }
 
 
-    // Récupérer le nombre total de réactions pour cette publication
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM reaction_publication WHERE id_publication = ?");
-    $stmt->execute([$idPublication]);
-    $nbReactions = $stmt->fetchColumn();
+    // Compter le nombre total de réactions pour cette publication
+    $stmt = $pdo->prepare("SELECT COUNT(*) as totalReactions FROM reaction_publication WHERE id_publication = ?");
+    $stmt->execute([$id_publication]);
+    $totalReactions = $stmt->fetchColumn();
 
     // Retourner la réaction actuelle comme réponse JSON
-    echo json_encode(['reaction' => $type, 'nbReactions' => $nbReactions]);
+    echo json_encode(['reaction' => $type, 'totalReactions' => $totalReactions]);
 }

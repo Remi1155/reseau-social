@@ -10,9 +10,14 @@ require_once '../config/config.php';
 
 // Création d'une publication
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['publication'])) {
-    $contenu = $_POST['contenu'];
-    $stmt = $pdo->prepare("INSERT INTO publication (id_compte, contenu) VALUES (?, ?)");
-    $stmt->execute([$_SESSION['id_compte'], $contenu]);
+    $contenu = trim($_POST['contenu']);
+    if ($contenu != "") {
+        $stmt = $pdo->prepare("INSERT INTO publication (id_compte, contenu) VALUES (?, ?)");
+        $stmt->execute([$_SESSION['id_compte'], $contenu]);
+    } else {
+        $message_d_erreur = 'Le champ de publication ne peu pas etre vide.';
+    }
+    
 }
 
 // Récupération des publications avec le nombre de réactions
@@ -86,6 +91,9 @@ $users = $pdo->query("SELECT nom, prenom FROM compte");
                             Publier
                         </button>
                     </form>
+                    <?php if ($message_d_erreur) {
+                        echo '<p class="text-red-500 text-sm">' . $message_d_erreur . '</p>';
+                    } ?>
                 </div>
 
 
@@ -132,12 +140,14 @@ $users = $pdo->query("SELECT nom, prenom FROM compte");
                                 <!-- Bouttons de reactions et affichage des commentaires -->
                                 <div class="flex justify-around border-t border-1 border-solid border-gray-600 py-1">
                                     <div class="bg-gray-300 flex w-fit px-4 rounded">
-                                        
+
                                         <!-- Nombre de reactions -->
-                                        <div class="mr-4"><span id="reactions-count-<?php echo $publication['id_publication']; ?>"><?php echo $publication['reactions_count']; ?></span></div>
+                                        <p id="reaction-count-<?php echo $publication['id_publication']; ?>">
+                                            <?php echo $publication['reactions_count']; ?>
+                                        </p>
 
                                         <!-- Boutons de réactions -->
-                                        
+
                                         <button
                                             id="jaime-<?php echo $publication['id_publication']; ?>"
                                             <?php if ($userReaction === 'jaime') echo 'class="bg-blue-500"'; ?>
@@ -146,25 +156,25 @@ $users = $pdo->query("SELECT nom, prenom FROM compte");
                                             J'aime
                                         </button>
 
-                                        <button 
-                                            id="jadore-<?php echo $publication['id_publication']; ?>" 
+                                        <button
+                                            id="jadore-<?php echo $publication['id_publication']; ?>"
                                             <?php if ($userReaction === 'jadore') echo 'class="bg-blue-500"'; ?>
                                             style="margin-left:10px; font-size:13px"
                                             onclick="envoyerReaction('jadore', <?php echo $publication['id_publication']; ?>, <?php echo $_SESSION['id_compte']; ?>)">
                                             J'adore
                                         </button>
-                                        
-                                        <button 
+
+                                        <button
                                             id="haha-<?php echo $publication['id_publication']; ?>"
-                                            <?php if ($userReaction === 'haha') echo 'class="bg-blue-500"'; ?> 
+                                            <?php if ($userReaction === 'haha') echo 'class="bg-blue-500"'; ?>
                                             style="margin-left:10px; font-size:13px"
                                             onclick="envoyerReaction('haha', <?php echo $publication['id_publication']; ?>, <?php echo $_SESSION['id_compte']; ?>)">
                                             Haha
                                         </button>
-                                        
-                                        <button 
+
+                                        <button
                                             id="triste-<?php echo $publication['id_publication']; ?>"
-                                            <?php if ($userReaction === 'triste') echo 'class="bg-blue-500"'; ?> 
+                                            <?php if ($userReaction === 'triste') echo 'class="bg-blue-500"'; ?>
                                             style="margin-left:10px; font-size:13px"
                                             onclick="envoyerReaction('triste', <?php echo $publication['id_publication']; ?>, <?php echo $_SESSION['id_compte']; ?>)">
                                             Triste

@@ -27,10 +27,9 @@ function envoyerReaction(typeReaction, idPublication, idCompte) {
       // Réponse du serveur
       var response = JSON.parse(xhr.responseText);
 
-      // Mettre à jour le nombre de réactions
-      document
-        .getElementById("reactions-count-" + idPublication)
-        .innerText = response.nbReactions;
+      // Mettre à jour dynamiquement le nombre total de réactions
+      document.getElementById("reaction-count-" + idPublication).innerText =
+        response.totalReactions;
 
       // Réinitialisation les couleurs de tous les boutons de réaction
       document
