@@ -42,9 +42,9 @@ $users = $pdo->query("SELECT nom, prenom FROM compte");
     <link rel="stylesheet" href="../styles/output.css">
 </head>
 
-<body class="text-xl">
-    <div id="container">
-        <header class="w-full h-[100px] bg-blue-500 flex items-center justify-between px-12 text-3xl fixed">
+<body class="text-xl ">
+    <div id="container" class="h-full">
+        <header class="w-full h-[100px] bg-blue-500 flex items-center justify-between px-12 text-3xl fixed overflow-y-hidden">
             <div>Bienvenue, <?php echo $_SESSION['prenom'] . ' ' . $_SESSION['nom']; ?></div>
             <a href="./logout.php" class="mt-4 inline-block bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 text-sm rounded transition duration-300 ease-in-out transform hover:-translate-y-0.5">
                 Déconnecter
@@ -53,7 +53,7 @@ $users = $pdo->query("SELECT nom, prenom FROM compte");
 
         <main class="w-full flex px-12 bg-gray-200 pt-8  pt-[120px]">
             <!-- Partie gauche -->
-            <div class=" w-1/5 min-h-screen bg-gray-50 border border-gray-200 shadow-lg rounded-lg p-4">
+            <div class=" w-1/5 min-h-screen bg-gray-50 border border-gray-200 shadow-lg rounded-lg p-4 ">
                 <h2 class="text-2xl font-extrabold text-gray-800 mb-4">Liste des amis:</h2>
                 <ul class="list-disc list-inside pl-5 space-y-3">
                     <?php foreach ($users as $user):
@@ -67,7 +67,7 @@ $users = $pdo->query("SELECT nom, prenom FROM compte");
             </div>
 
             <!-- Partie principale -->
-            <div class="w-3/5 mx-4 bg-gray-300 rounded-lg p-4">
+            <div class="w-3/5 mx-4 bg-gray-300 rounded-lg p-4 overflow-y-auto overflow-y-scroll">
                 <div class="items-center bg-gray-300 w-full">
                     <div class="bg-gray-300 text-sm mb-4">A quoi pensez-vous ?</div>
 
