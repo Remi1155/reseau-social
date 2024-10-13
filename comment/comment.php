@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['id_compte'])) {
-    header('Location: ../login.php');
+    header('Location: ../index.php');
     exit();
 }
 
