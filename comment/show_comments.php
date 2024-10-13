@@ -62,7 +62,7 @@ $commentaires = $comments_stmt->fetchAll();
         <!-- Bouton de retour -->
         <div class="fixed top-1/6 right-1/4">
             <a href="../others/home.php#<?php echo $id_publication ?>">
-                <button class="bg-gray-400 text-white px-4 py-2 rounded-full hover:bg-gray-500 transition duration-300 border border-[#0F89FD7F] border-solid border-2 mx-4">
+                <button class="bg-gray-400 text-white px-4 py-2 rounded-full hover:bg-gray-500 transition duration-300 mx-4">
                     X
                 </button>
             </a>
@@ -144,10 +144,17 @@ $commentaires = $comments_stmt->fetchAll();
 
 
         <!-- Champ pour commenter -->
-        <form method="post" action="../comment/comment.php" class="w-full">
-            <input name="commentaire" placeholder="Ajouter un commentaire" class="text-base border border-1 border-solid border-gray-600 p-2 rounded-md w-4/5"></input>
+        <form method="post" action="../comment/comment.php" class="w-full flex items-center">
+            <input name="commentaire" placeholder="Ajouter un commentaire" class="text-base border border-2 border-[#0F89FD7F] border-solid focus:outline-none focus:ring-1 focus:ring-[#2A91FE98] p-2 rounded-md w-4/5"></input>
             <input type="hidden" name="id_publication" value="<?php echo $publication['id_publication']; ?>">
-            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold  px-4 py-2 rounded text-sm ml-2">Commenter</button>
+            <button type="submit" class="ml-4">
+                <svg height="35px" width="35px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                    viewBox="0 0 512 512" xml:space="preserve">
+                    <path style="fill:#2D2D2D;" d="M256,0C114.608,0,0,114.608,0,256c0,141.376,114.608,256,256,256s256-114.624,256-256
+                                                                	   C512,114.608,397.392,0,256,0z" />
+                    <path style="fill:#8AD5DD;" d="M147.136,392.144l87.472-136.4l-87.472-136.4l284.304,136.4L147.136,392.144z" />
+                </svg>
+            </button>
         </form>
 
 
