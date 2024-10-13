@@ -8,6 +8,9 @@ if (!isset($_SESSION['id_compte'])) {
 // Connexion à la base de données
 require_once '../config/config.php';
 
+// Pour pouvoir utiliser la fonction showUser
+require_once '../components/showUser.php';
+
 // Création d'une publication
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['publication'])) {
     $contenu = trim($_POST['contenu']);
@@ -17,7 +20,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['publication'])) {
     } else {
         $message_d_erreur = 'Le champ de publication ne peu pas etre vide.';
     }
-    
 }
 
 // Récupération des publications avec le nombre de réactions
@@ -49,17 +51,19 @@ $users = $pdo->query("SELECT nom, prenom FROM compte");
 
 <body class="text-xl ">
     <div id="container" class="h-full">
-        <header class="w-full h-[100px] bg-blue-500 flex items-center justify-between px-12 text-3xl fixed overflow-y-hidden">
+        <header class="w-full h-[100px] bg-[#0090FF] flex items-center justify-between px-12 text-3xl fixed z-10 overflow-y-hidden">
             <div>Bienvenue, <?php echo $_SESSION['prenom'] . ' ' . $_SESSION['nom']; ?></div>
-            <a href="./logout.php" class="mt-4 inline-block bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 text-sm rounded transition duration-300 ease-in-out transform hover:-translate-y-0.5">
+            <a href="./logout.php" class="mt-4 inline-block bg-gray-400 hover:bg-gray-500 text-[#C2E6FF] font-bold py-2 px-4 text-sm rounded transition duration-300 ease-in-out transform hover:-translate-y-0.5">
                 Déconnecter
             </a>
         </header>
 
-        <main class="w-full flex px-12 bg-gray-200 pt-8  pt-[120px]">
+        <main class="w-full flex px-12 bg-[#004DF211] pt-8  pt-[120px] h-screen fixed">
             <!-- Partie gauche -->
-            <div class=" w-1/5 min-h-screen bg-gray-50 border border-gray-200 shadow-lg rounded-lg p-4 ">
-                <h2 class="text-2xl font-extrabold text-gray-800 mb-4">Liste des amis:</h2>
+            <div class=" w-1/5 h-fit overflow-y-scroll bg-[#1166FB18] border border-gray-200 shadow-lg rounded-lg p-4 ">
+                <?php echo showUser("../img/personeAnonyme2.png", $_SESSION['prenom'], $_SESSION['nom']) ?>
+
+                <h2 class="text-2xl font-extrabold text-gray-800  mt-8">Liste des amis:</h2>
                 <ul class="list-disc list-inside pl-5 space-y-3">
                     <?php foreach ($users as $user):
                         if ($user['nom'] != $_SESSION['nom']): ?>
@@ -72,24 +76,25 @@ $users = $pdo->query("SELECT nom, prenom FROM compte");
             </div>
 
             <!-- Partie principale -->
-            <div class="w-3/5 mx-4 bg-gray-300 rounded-lg p-4 overflow-y-auto overflow-y-scroll">
-                <div class="items-center bg-gray-300 w-full">
-                    <div class="bg-gray-300 text-sm mb-4">A quoi pensez-vous ?</div>
+            <div class="w-3/5  overflow-y-scroll mx-4 bg-[#1166FB18] rounded-lg p-4 overflow-y-auto">
+                <div class="items-center w-full">
+                    <div class="text-sm mb-4">A quoi pensez-vous ?</div>
 
                     <!-- Formulaire de publication -->
-                    <form method="post" action="" class=" flex items-center w-full mx-auto">
+                    <form method="post" action="" class=" flex items-center w-full mx-auto ">
                         <textarea
                             name="contenu"
                             placeholder="Quoi de neuf ?"
                             required
-                            class="w-full border rounded-lg  mr-4 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none h-20">
+                            class="w-full border rounded-lg  mr-4 focus:outline-none focus:ring-1 focus:ring-[#2A91FE98] resize-none h-20 border border-[#0F89FD7F] border-solid border-2">
                         </textarea>
-                        <button
+                        <button class="bg-gradient-to-r from-blue-600 via-cyan-400 to-blue-700 text-white px-6 py-2 rounded-full border-none font-sans text-xs hover:bg-gradient-to-l hover:from-blue-700 hover:to-cyan-500 transition-all duration-300 transform hover:-translate-y-0.5 scale-110"
                             type="submit"
-                            name="publication"
-                            class="bg-blue-500 hover:bg-blue-600 text-white font-bold px-8 py-2 rounded text-xs ">
+                            name="publication">
                             Publier
+
                         </button>
+
                     </form>
                     <?php if ($message_d_erreur) {
                         echo '<p class="text-red-500 text-sm">' . $message_d_erreur . '</p>';
@@ -99,7 +104,7 @@ $users = $pdo->query("SELECT nom, prenom FROM compte");
 
                 <div class="w-full">
                     <!-- Liste des publications -->
-                    <div class="bg-gray-300 text-sm mt-12 mb-4">Publications récentes:</div>
+                    <div class="text-sm mt-12 mb-4">Publications récentes:</div>
                     <?php
                     foreach ($publications as $publication) {
 
@@ -109,16 +114,14 @@ $users = $pdo->query("SELECT nom, prenom FROM compte");
                         $userReaction = $stmt->fetchColumn();
                     ?>
 
-                        <div class=" mb-8 p-4 bg-white rounded-lg">
+                        <div class=" mb-8 p-4 bg-white rounded-lg" id="<?php echo $publication["id_publication"] ?>">
                             <!-- Utilisateur qui publie -->
-                            <div class="text-3xl flex items-center">
-                                <img src="../img/personeAnonyme2.png" alt="Image de l'Utilisateur" class="h-16 w-16">
-                                <?php echo htmlspecialchars($publication['prenom'] . ' ' . $publication['nom']); ?>
-                            </div>
+                            <?php echo showUser("../img/personeAnonyme2.png", $publication['prenom'], $publication['nom']) ?>
+
                             <!-- Date de publication -->
                             <div class="text-xs text-gray-500"><?php echo htmlspecialchars($publication['date_heure']); ?></div>
 
-                            <div class="bg-gray-400 w-full p-4 pb-0 mb-4 rounded-lg">
+                            <div class="bg-[#3B9EFF] w-full p-4 pb-0 mb-4 rounded-lg">
                                 <div class="flex justify-between">
                                     <!-- Contenu de la publication -->
                                     <div class="mb-6"><?php echo nl2br(htmlspecialchars($publication['contenu'])); ?></div>
@@ -197,9 +200,9 @@ $users = $pdo->query("SELECT nom, prenom FROM compte");
 
                             <!-- Champ pour commenter -->
                             <form method="post" action="../comment/comment.php" class="w-full">
-                                <input name="commentaire" placeholder="Ajouter un commentaire" class="text-base border border-1 border-solid border-gray-600 p-2 rounded-md w-4/5"></input>
+                                <input name="commentaire" placeholder="Ajouter un commentaire" class="text-base border border-2 border-[#0F89FD7F] border-solid focus:outline-none focus:ring-1 focus:ring-[#2A91FE98] p-2 rounded-md w-4/5"></input>
                                 <input type="hidden" name="id_publication" value="<?php echo $publication['id_publication']; ?>">
-                                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold  px-4 py-2 rounded text-sm ml-2">Commenter</button>
+                                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-[#C2E6FF] text-xs font-bold  px-4 py-2 rounded text-sm ml-2">Commenter</button>
                             </form>
 
                         </div>
@@ -208,7 +211,7 @@ $users = $pdo->query("SELECT nom, prenom FROM compte");
             </div>
 
             <!-- Partie droite -->
-            <div class="w-1/5 min-h-screen bg-white rounded-lg p-4">
+            <div class="w-1/5  h-fit overflow-y-scroll bg-[#1166FB18] rounded-lg p-4">
                 Menu
             </div>
         </main>

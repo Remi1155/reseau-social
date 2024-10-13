@@ -8,6 +8,10 @@ if (!isset($_SESSION['id_compte'])) {
 // Connexion à la base de données
 require_once '../config/config.php';
 
+// Pour pouvoir utiliser la fonction showUser
+require_once '../components/showUser.php';
+
+
 // Vérification si l'ID de la publication est passé en paramètre
 if (!isset($_GET['id_publication'])) {
     echo "Aucune publication sélectionnée.";
@@ -50,26 +54,25 @@ $commentaires = $comments_stmt->fetchAll();
     <link rel="stylesheet" href="../styles/output.css">
 </head>
 
-<body class="bg-gray-100 text-gray-900">
+<body class="bg-[#004DF211] text-gray-900 w-screen h-screen flex items-center justify-center">
 
     <!-- Conteneur principal -->
-    <div class="max-w-4xl mx-auto p-6">
+    <div class="w-1/2 h-3/4 overflow-hidden mx-auto p-6 bg-[#1166FB18] overflow-y-scroll rounded-lg relative">
 
         <!-- Bouton de retour -->
-        <div class="mb-6">
-            <a href="../others/home.php">
-                <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300">
-                    Retour
+        <div class="fixed top-1/6 right-1/4">
+            <a href="../others/home.php#<?php echo $id_publication ?>">
+                <button class="bg-gray-400 text-white px-4 py-2 rounded-full hover:bg-gray-500 transition duration-300 border border-[#0F89FD7F] border-solid border-2 mx-4">
+                    X
                 </button>
             </a>
         </div>
 
         <!-- Affichage de la publication -->
         <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-            <div class="text-3xl flex items-center">
-                <img src="../img/personeAnonyme2.png" alt="Image de l'Utilisateur" class="h-16 w-16">
-                <?php echo htmlspecialchars($publication['prenom'] . ' ' . $publication['nom']); ?>
-            </div>
+            <!-- Utilisateur qui publie -->
+            <?php echo showUser("../img/personeAnonyme2.png", $publication['prenom'], $publication['nom']) ?>
+
             <p class="text-black mb-4 text-2xl"><?php echo nl2br(htmlspecialchars($publication['contenu'])); ?></p>
             <p class="text-xs text-gray-500">Publié le : <?php echo htmlspecialchars($publication['date_heure']); ?></p>
         </div>
@@ -87,7 +90,9 @@ $commentaires = $comments_stmt->fetchAll();
 
         ?>
             <div class="bg-white p-4 rounded-lg shadow-md mb-4">
-                <p class="text-lg font-semibold"><?php echo htmlspecialchars($commentaire['prenom'] . ' ' . $commentaire['nom']); ?></p>
+                <!-- <?php echo showUser("../img/personeAnonyme2.png", $commentaire['prenom'], $commentaire['nom']) ?> -->
+                <p class="text-2xl"><?php echo htmlspecialchars($commentaire['prenom'] . ' ' . $commentaire['nom']) ?></p>
+
                 <p class="text-gray-700 text-xl"><?php echo nl2br(htmlspecialchars($commentaire['contenu'])); ?></p>
                 <p class="text-xs text-gray-500 mt-4">Publié le : <?php echo htmlspecialchars($commentaire['date_heure']); ?></p>
 
