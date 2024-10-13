@@ -146,7 +146,7 @@ $users = $pdo->query("SELECT nom, prenom FROM compte");
 
                                         <!-- Nombre de reactions -->
                                         <p id="reaction-count-<?php echo $publication['id_publication']; ?>">
-                                            <?php echo $publication['reactions_count']; ?>
+                                            <?php echo $publication['reactions_count'] . '   |'; ?>
                                         </p>
 
                                         <!-- Boutons de réactions -->
@@ -187,7 +187,7 @@ $users = $pdo->query("SELECT nom, prenom FROM compte");
                                     <!-- Liste des commentaires -->
                                     <div class="bg-gray-300 flex ml-8 px-4 rounded">
                                         <!-- Nombre de commentaires -->
-                                        <div class="mr-4"><?php echo $publication['comments_count']; ?></div>
+                                        <div class="mr-4"><?php echo $publication['comments_count'] . '  |'; ?></div>
                                         <!-- Lien vers toutes les commentaires -->
                                         <a href="../comment/show_comments.php?id_publication=<?php echo $publication['id_publication']; ?>" class="">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24">
